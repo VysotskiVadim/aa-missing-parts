@@ -34,7 +34,13 @@ import com.example.android.people.ReplyReceiver
 /**
  * Handles all operations related to [Notification].
  */
-class NotificationHelper(private val context: Context) {
+interface Notifications {
+    fun initialize()
+    fun showNotification(chat: Chat)
+    fun dismissNotification(id: Long)
+}
+
+class AndroidNotifications(private val context: Context) : Notifications {
 
     companion object {
         /**
@@ -43,13 +49,12 @@ class NotificationHelper(private val context: Context) {
         private const val CHANNEL_NEW_MESSAGES = "new_messages"
 
         private const val REQUEST_CONTENT = 1
-        private const val REQUEST_BUBBLE = 2
     }
 
     private val notificationManager: NotificationManager =
         context.getSystemService() ?: throw IllegalStateException()
 
-    fun setUpNotificationChannels() {
+    override fun initialize() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             if (notificationManager.getNotificationChannel(CHANNEL_NEW_MESSAGES) == null) {
                 notificationManager.createNotificationChannel(
@@ -67,7 +72,7 @@ class NotificationHelper(private val context: Context) {
     }
 
     @WorkerThread
-    fun showNotification(chat: Chat, fromUser: Boolean) {
+    override fun showNotification(chat: Chat) {
         val icon = IconCompat.createWithAdaptiveBitmapContentUri(chat.contact.iconUri)
         val contentUri = "https://android.example.com/chat/${chat.contact.id}".toUri()
 
@@ -144,7 +149,7 @@ class NotificationHelper(private val context: Context) {
         notificationManager.notify(chat.contact.id.toInt(), builder.build())
     }
 
-    fun dismissNotification(id: Long) {
+    override fun dismissNotification(id: Long) {
         notificationManager.cancel(id.toInt())
     }
 }

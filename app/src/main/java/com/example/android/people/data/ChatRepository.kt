@@ -34,7 +34,7 @@ interface ChatRepository {
 }
 
 class DefaultChatRepository internal constructor(
-    private val notificationHelper: NotificationHelper,
+    private val notifications: Notifications,
     private val executor: Executor
 ) : ChatRepository {
 
@@ -44,7 +44,7 @@ class DefaultChatRepository internal constructor(
         fun getInstance(context: Context): DefaultChatRepository {
             return instance ?: synchronized(this) {
                 instance ?: DefaultChatRepository(
-                    NotificationHelper(context),
+                    AndroidNotifications(context),
                     Executors.newFixedThreadPool(4)
                 ).also {
                     instance = it
@@ -60,7 +60,7 @@ class DefaultChatRepository internal constructor(
     }.toMap()
 
     init {
-        notificationHelper.setUpNotificationChannels()
+        notifications.initialize()
     }
 
     @MainThread
@@ -114,19 +114,19 @@ class DefaultChatRepository internal constructor(
             chat.addMessage(chat.contact.reply(text))
             // Show notification if the chat is not on the foreground.
             if (chat.contact.id != currentChat) {
-                notificationHelper.showNotification(chat, false)
+                notifications.showNotification(chat)
             }
         }
     }
 
     override fun updateNotification(id: Long) {
         val chat = chats.getValue(id)
-        notificationHelper.showNotification(chat, false)
+        notifications.showNotification(chat)
     }
 
     override fun activateChat(id: Long) {
         currentChat = id
-        notificationHelper.dismissNotification(id)
+        notifications.dismissNotification(id)
     }
 
     override fun deactivateChat(id: Long) {
