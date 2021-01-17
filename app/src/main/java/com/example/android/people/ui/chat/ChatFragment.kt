@@ -16,13 +16,8 @@
 package com.example.android.people.ui.chat
 
 import android.content.Intent
-import android.content.LocusId
-import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.transition.TransitionInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
@@ -95,10 +90,10 @@ class ChatFragment : Fragment(R.layout.chat_fragment) {
                 Toast.makeText(view.context, "Contact not found", Toast.LENGTH_SHORT).show()
                 parentFragmentManager.popBackStack()
             } else {
-                requireActivity().setLocusContext(LocusId(contact.shortcutId), null)
                 navigationController.updateAppBar { name, icon ->
                     name.text = contact.name
-                    icon.setImageIcon(Icon.createWithAdaptiveBitmapContentUri(contact.iconUri))
+                    // TODO: image icon on API 21?
+                    //icon.setImageIcon(IconCompat.createWithAdaptiveBitmapContentUri(contact.iconUri))
                     startPostponedEnterTransition()
                 }
             }
@@ -171,29 +166,6 @@ class ChatFragment : Fragment(R.layout.chat_fragment) {
                 viewModel.send(text.toString())
                 text.clear()
             }
-        }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.chat, menu)
-        menu.findItem(R.id.action_show_as_bubble)?.let { item ->
-            viewModel.showAsBubbleVisible.observe(viewLifecycleOwner) { visible ->
-                item.isVisible = visible
-            }
-        }
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_show_as_bubble -> {
-                viewModel.showAsBubble()
-                if (isAdded) {
-                    parentFragmentManager.popBackStack()
-                }
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
         }
     }
 }

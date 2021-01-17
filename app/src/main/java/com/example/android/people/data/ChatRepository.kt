@@ -31,8 +31,6 @@ interface ChatRepository {
     fun updateNotification(id: Long)
     fun activateChat(id: Long)
     fun deactivateChat(id: Long)
-    fun showAsBubble(id: Long)
-    fun canBubble(id: Long): Boolean
 }
 
 class DefaultChatRepository internal constructor(
@@ -135,17 +133,5 @@ class DefaultChatRepository internal constructor(
         if (currentChat == id) {
             currentChat = 0
         }
-    }
-
-    override fun showAsBubble(id: Long) {
-        val chat = chats.getValue(id)
-        executor.execute {
-            notificationHelper.showNotification(chat, true)
-        }
-    }
-
-    override fun canBubble(id: Long): Boolean {
-        val chat = chats.getValue(id)
-        return notificationHelper.canBubble(chat.contact)
     }
 }

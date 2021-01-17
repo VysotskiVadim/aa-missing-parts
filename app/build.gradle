@@ -20,7 +20,7 @@ android {
     compileSdkVersion 30
     defaultConfig {
         applicationId 'com.example.android.people'
-        minSdkVersion 30
+        minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
         versionName '1.0'
@@ -33,8 +33,8 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    viewBinding {
-        enabled = true
+    buildFeatures {
+        viewBinding = true
     }
 }
 
