@@ -21,6 +21,7 @@ import android.transition.TransitionInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
+import androidx.core.graphics.drawable.IconCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
@@ -92,8 +93,11 @@ class ChatFragment : Fragment(R.layout.chat_fragment) {
             } else {
                 navigationController.updateAppBar { name, icon ->
                     name.text = contact.name
-                    // TODO: image icon on API 21?
-                    //icon.setImageIcon(IconCompat.createWithAdaptiveBitmapContentUri(contact.iconUri))
+                    Glide
+                        .with(this)
+                        .load(contact.iconUri)
+                        .circleCrop()
+                        .into(icon)
                     startPostponedEnterTransition()
                 }
             }
