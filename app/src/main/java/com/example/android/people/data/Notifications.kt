@@ -23,13 +23,12 @@ import android.content.Context
 import android.content.Intent
 import androidx.annotation.WorkerThread
 import androidx.core.app.NotificationCompat
-import androidx.core.app.RemoteInput
-import androidx.core.content.getSystemService
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.Person
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.net.toUri
 import com.example.android.people.MainActivity
 import com.example.android.people.R
-import com.example.android.people.ReplyReceiver
 
 /**
  * Handles all operations related to [Notification].
@@ -51,13 +50,13 @@ class AndroidNotifications(private val context: Context) : Notifications {
         private const val REQUEST_CONTENT = 1
     }
 
-    private val notificationManager: NotificationManager =
-        context.getSystemService() ?: throw IllegalStateException()
+    private val notificationManagerCompat: NotificationManagerCompat =
+        NotificationManagerCompat.from(context)
 
     override fun initialize() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            if (notificationManager.getNotificationChannel(CHANNEL_NEW_MESSAGES) == null) {
-                notificationManager.createNotificationChannel(
+            if (notificationManagerCompat.getNotificationChannel(CHANNEL_NEW_MESSAGES) == null) {
+                notificationManagerCompat.createNotificationChannel(
                     NotificationChannel(
                         CHANNEL_NEW_MESSAGES,
                         context.getString(R.string.channel_new_messages),
@@ -75,58 +74,55 @@ class AndroidNotifications(private val context: Context) : Notifications {
     override fun showNotification(chat: Chat) {
         val icon = IconCompat.createWithAdaptiveBitmapContentUri(chat.contact.iconUri)
         val contentUri = "https://android.example.com/chat/${chat.contact.id}".toUri()
+        val person = Person.Builder()
+            .setName(chat.contact.name)
+            //.setIcon(icon)
+            .build()
 
         val builder = NotificationCompat.Builder(context, CHANNEL_NEW_MESSAGES)
-
-            // The user can turn off the bubble in system settings. In that case, this notification
-            // is shown as a normal notification instead of a bubble. Make sure that this
-            // notification works as a normal notification as well.
             .setContentTitle(chat.contact.name)
+            .setContentText(chat.messages.last().text)
             .setSmallIcon(R.drawable.ic_message)
-            .setCategory(Notification.CATEGORY_MESSAGE)
-            .setShortcutId(chat.contact.shortcutId)
-            .setShowWhen(true)
-            // The content Intent is used when the user clicks on the "Open Content" icon button on
-            // the expanded bubble, as well as when the fall-back notification is clicked.
-            .setContentIntent(
-                PendingIntent.getActivity(
-                    context,
-                    REQUEST_CONTENT,
-                    Intent(context, MainActivity::class.java)
-                        .setAction(Intent.ACTION_VIEW)
-                        .setData(contentUri),
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                )
-            )
-            // Direct Reply
-            .addAction(
-                NotificationCompat.Action
-                    .Builder(
-                        IconCompat.createWithResource(context, R.drawable.ic_send),
-                        context.getString(R.string.label_reply),
-                        PendingIntent.getBroadcast(
-                            context,
-                            REQUEST_CONTENT,
-                            Intent(context, ReplyReceiver::class.java).setData(contentUri),
-                            PendingIntent.FLAG_UPDATE_CURRENT
-                        )
-                    )
-                    .addRemoteInput(
-                        RemoteInput.Builder(ReplyReceiver.KEY_TEXT_REPLY)
-                            .setLabel(context.getString(R.string.hint_input))
-                            .build()
-                    )
-                    .setAllowGeneratedReplies(true)
-                    .build()
-            )
-            // Let's add some more content to the notification in case it falls back to a normal
-            // notification.
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+//            .setContentIntent(
+//                PendingIntent.getActivity(
+//                    context,
+//                    REQUEST_CONTENT,
+//                    Intent(context, MainActivity::class.java)
+//                        .setAction(Intent.ACTION_VIEW)
+//                        .setData(contentUri),
+//                    PendingIntent.FLAG_UPDATE_CURRENT
+//                )
+//            )
+//            // Direct Reply
+//            .addAction(
+//                NotificationCompat.Action
+//                    .Builder(
+//                        IconCompat.createWithResource(context, R.drawable.ic_send),
+//                        context.getString(R.string.label_reply),
+//                        PendingIntent.getBroadcast(
+//                            context,
+//                            REQUEST_CONTENT,
+//                            Intent(context, ReplyReceiver::class.java).setData(contentUri),
+//                            PendingIntent.FLAG_UPDATE_CURRENT
+//                        )
+//                    )
+//                    .addRemoteInput(
+//                        RemoteInput.Builder(ReplyReceiver.KEY_TEXT_REPLY)
+//                            .setLabel(context.getString(R.string.hint_input))
+//                            .build()
+//                    )
+//                    .setAllowGeneratedReplies(true)
+//                    .build()
+//            )
+        // Let's add some more content to the notification in case it falls back to a normal
+        // notification.
 //            .setStyle(
-//                NotificationCompat.MessagingStyle(user)
-//                    .apply {
+//                NotificationCompat.MessagingStyle(person)
+//                    .run {
 //                        val lastId = chat.messages.last().id
 //                        for (message in chat.messages) {
-//                            val m = Notification.MessagingStyle.Message(
+//                            val m = NotificationCompat.MessagingStyle.Message(
 //                                message.text,
 //                                message.timestamp,
 //                                if (message.isIncoming) person else null
@@ -136,20 +132,24 @@ class AndroidNotifications(private val context: Context) : Notifications {
 //                                }
 //                            }
 //                            if (message.id < lastId) {
-//                                addHistoricMessage(m)
+//                                //addHistoricMessage(m)
+//                                addMessage(m)
 //                            } else {
 //                                addMessage(m)
 //                            }
 //                        }
+//                        this
 //                    }
 //                    .setGroupConversation(false)
 //            )
-            .setWhen(chat.messages.last().timestamp)
+        //.setWhen(chat.messages.last().timestamp)
 
-        notificationManager.notify(chat.contact.id.toInt(), builder.build())
+
+
+        notificationManagerCompat.notify("tag", chat.contact.id.toInt(), builder.build())
     }
 
     override fun dismissNotification(id: Long) {
-        notificationManager.cancel(id.toInt())
+        notificationManagerCompat.cancel(id.toInt())
     }
 }

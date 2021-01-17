@@ -20,8 +20,15 @@ import android.net.Uri
 import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import java.util.concurrent.Executor
-import java.util.concurrent.Executors
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
+
+private const val CURRENT_USER_ID = 0L
 
 interface ChatRepository {
     fun getContacts(): LiveData<List<Contact>>
@@ -34,9 +41,8 @@ interface ChatRepository {
 }
 
 class DefaultChatRepository internal constructor(
-    private val notifications: Notifications,
-    private val executor: Executor
-) : ChatRepository {
+    private val notifications: Notifications
+) : ChatRepository, CoroutineScope {
 
     companion object {
         private var instance: DefaultChatRepository? = null
@@ -44,14 +50,15 @@ class DefaultChatRepository internal constructor(
         fun getInstance(context: Context): DefaultChatRepository {
             return instance ?: synchronized(this) {
                 instance ?: DefaultChatRepository(
-                    AndroidNotifications(context),
-                    Executors.newFixedThreadPool(4)
+                    AndroidNotifications(context)
                 ).also {
                     instance = it
                 }
             }
         }
     }
+
+    override val coroutineContext: CoroutineContext = Dispatchers.Main + SupervisorJob()
 
     private var currentChat: Long = 0L
 
@@ -101,20 +108,32 @@ class DefaultChatRepository internal constructor(
     override fun sendMessage(id: Long, text: String, photoUri: Uri?, photoMimeType: String?) {
         val chat = chats.getValue(id)
         chat.addMessage(Message.Builder().apply {
-            sender = 0L // User
+            sender = CURRENT_USER_ID
             this.text = text
             timestamp = System.currentTimeMillis()
             this.photo = photoUri
             this.photoMimeType = photoMimeType
-        })
-        executor.execute {
-            // The animal is typing...
-            Thread.sleep(5000L)
-            // Receive a reply.
-            chat.addMessage(chat.contact.reply(text))
-            // Show notification if the chat is not on the foreground.
-            if (chat.contact.id != currentChat) {
-                notifications.showNotification(chat)
+            this.id = MessagesIds.getNextMessageId()
+        }.build())
+        launch {
+            delay(5000) // The animal is typing...
+            chat.contact.reply(text).collect { chatUpdate ->
+                when (chatUpdate) {
+                    is ChatUpdate.NewMessage -> {
+                        chat.addMessage(chatUpdate.message)
+                        if (chat.contact.id != currentChat) {
+                            notifications.showNotification(chat)
+                        }
+                    }
+                    is ChatUpdate.UpdateMessage -> {
+                        chat.updateMessage(chatUpdate.message)
+                        // TODO: update notification
+                    }
+                    is ChatUpdate.RemoveMessage -> {
+                        chat.removeMessage(chatUpdate.messageId)
+                        // TODO: dismiss notification
+                    }
+                }
             }
         }
     }
