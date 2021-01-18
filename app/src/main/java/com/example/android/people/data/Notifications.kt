@@ -25,10 +25,12 @@ import androidx.annotation.WorkerThread
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.Person
+import androidx.core.app.RemoteInput
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.net.toUri
 import com.example.android.people.MainActivity
 import com.example.android.people.R
+import com.example.android.people.ReplyReceiver
 
 /**
  * Handles all operations related to [Notification].
@@ -76,7 +78,7 @@ class AndroidNotifications(private val context: Context) : Notifications {
         val contentUri = "https://android.example.com/chat/${chat.contact.id}".toUri()
         val person = Person.Builder()
             .setName(chat.contact.name)
-            //.setIcon(icon)
+            //.setIcon(icon) TODO: why icon crashes?
             .build()
 
         val builder = NotificationCompat.Builder(context, CHANNEL_NEW_MESSAGES)
@@ -84,65 +86,64 @@ class AndroidNotifications(private val context: Context) : Notifications {
             .setContentText(chat.messages.last().text)
             .setSmallIcon(R.drawable.ic_message)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-//            .setContentIntent(
-//                PendingIntent.getActivity(
-//                    context,
-//                    REQUEST_CONTENT,
-//                    Intent(context, MainActivity::class.java)
-//                        .setAction(Intent.ACTION_VIEW)
-//                        .setData(contentUri),
-//                    PendingIntent.FLAG_UPDATE_CURRENT
-//                )
-//            )
+            .setContentIntent(
+                PendingIntent.getActivity(
+                    context,
+                    REQUEST_CONTENT,
+                    Intent(context, MainActivity::class.java)
+                        .setAction(Intent.ACTION_VIEW)
+                        .setData(contentUri),
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                )
+            )
 //            // Direct Reply
-//            .addAction(
-//                NotificationCompat.Action
-//                    .Builder(
-//                        IconCompat.createWithResource(context, R.drawable.ic_send),
-//                        context.getString(R.string.label_reply),
-//                        PendingIntent.getBroadcast(
-//                            context,
-//                            REQUEST_CONTENT,
-//                            Intent(context, ReplyReceiver::class.java).setData(contentUri),
-//                            PendingIntent.FLAG_UPDATE_CURRENT
-//                        )
-//                    )
-//                    .addRemoteInput(
-//                        RemoteInput.Builder(ReplyReceiver.KEY_TEXT_REPLY)
-//                            .setLabel(context.getString(R.string.hint_input))
-//                            .build()
-//                    )
-//                    .setAllowGeneratedReplies(true)
-//                    .build()
-//            )
+            .addAction(
+                NotificationCompat.Action
+                    .Builder(
+                        IconCompat.createWithResource(context, R.drawable.ic_send),
+                        context.getString(R.string.label_reply),
+                        PendingIntent.getBroadcast(
+                            context,
+                            REQUEST_CONTENT,
+                            Intent(context, ReplyReceiver::class.java).setData(contentUri),
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                        )
+                    )
+                    .addRemoteInput(
+                        RemoteInput.Builder(ReplyReceiver.KEY_TEXT_REPLY)
+                            .setLabel(context.getString(R.string.hint_input))
+                            .build()
+                    )
+                    .setAllowGeneratedReplies(true)
+                    .build()
+            )
         // Let's add some more content to the notification in case it falls back to a normal
         // notification.
-//            .setStyle(
-//                NotificationCompat.MessagingStyle(person)
-//                    .run {
-//                        val lastId = chat.messages.last().id
-//                        for (message in chat.messages) {
-//                            val m = NotificationCompat.MessagingStyle.Message(
-//                                message.text,
-//                                message.timestamp,
-//                                if (message.isIncoming) person else null
-//                            ).apply {
-//                                if (message.photoUri != null) {
-//                                    setData(message.photoMimeType, message.photoUri)
-//                                }
-//                            }
-//                            if (message.id < lastId) {
-//                                //addHistoricMessage(m)
-//                                addMessage(m)
-//                            } else {
-//                                addMessage(m)
-//                            }
-//                        }
-//                        this
-//                    }
-//                    .setGroupConversation(false)
-//            )
-        //.setWhen(chat.messages.last().timestamp)
+            .setStyle(
+                NotificationCompat.MessagingStyle(person)
+                    .run {
+                        val lastId = chat.messages.last().id
+                        for (message in chat.messages) {
+                            val m = NotificationCompat.MessagingStyle.Message(
+                                message.text,
+                                message.timestamp,
+                                if (message.isIncoming) person else null
+                            ).apply {
+                                if (message.photoUri != null) {
+                                    setData(message.photoMimeType, message.photoUri)
+                                }
+                            }
+                            if (message.id < lastId) {
+                                addHistoricMessage(m)
+                            } else {
+                                addMessage(m)
+                            }
+                        }
+                        this
+                    }
+                    .setGroupConversation(false)
+            )
+        .setWhen(chat.messages.last().timestamp)
 
 
 
