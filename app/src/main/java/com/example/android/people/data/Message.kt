@@ -27,7 +27,7 @@ data class Message(
 ) {
 
     val isIncoming: Boolean
-        get() = sender != 0L
+        get() = sender != CURRENT_USER_ID
 
     class Builder {
         var id: Long? = null

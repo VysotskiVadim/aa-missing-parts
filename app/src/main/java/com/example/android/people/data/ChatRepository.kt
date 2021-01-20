@@ -28,7 +28,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
-private const val CURRENT_USER_ID = 0L
+internal const val CURRENT_USER_ID = 0L
 
 interface ChatRepository {
     fun getContacts(): LiveData<List<Contact>>
@@ -122,7 +122,7 @@ class DefaultChatRepository internal constructor(
                     is ChatUpdate.NewMessage -> {
                         chat.addMessage(chatUpdate.message)
                         if (chat.contact.id != currentChat) {
-                            notifications.showNotification(chat)
+                            notifications.showNotificationForChat(chat)
                         }
                     }
                     is ChatUpdate.UpdateMessage -> {
@@ -140,7 +140,7 @@ class DefaultChatRepository internal constructor(
 
     override fun updateNotification(id: Long) {
         val chat = chats.getValue(id)
-        notifications.showNotification(chat)
+        notifications.showNotificationForChat(chat)
     }
 
     override fun activateChat(id: Long) {
