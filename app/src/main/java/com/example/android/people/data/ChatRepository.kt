@@ -119,20 +119,12 @@ class DefaultChatRepository internal constructor(
             delay(5000) // The animal is typing...
             chat.contact.reply(text).collect { chatUpdate ->
                 when (chatUpdate) {
-                    is ChatUpdate.NewMessage -> {
-                        chat.addMessage(chatUpdate.message)
-                        if (chat.contact.id != currentChat) {
-                            notifications.showNotificationForChat(chat)
-                        }
-                    }
-                    is ChatUpdate.UpdateMessage -> {
-                        chat.updateMessage(chatUpdate.message)
-                        // TODO: update notification
-                    }
-                    is ChatUpdate.RemoveMessage -> {
-                        chat.removeMessage(chatUpdate.messageId)
-                        // TODO: dismiss notification
-                    }
+                    is ChatUpdate.NewMessage -> chat.addMessage(chatUpdate.message)
+                    is ChatUpdate.UpdateMessage -> chat.updateMessage(chatUpdate.message)
+                    is ChatUpdate.RemoveMessage -> chat.removeMessage(chatUpdate.messageId)
+                }
+                if (chat.contact.id != currentChat) {
+                    notifications.showNotification(chat)
                 }
             }
         }
@@ -140,7 +132,7 @@ class DefaultChatRepository internal constructor(
 
     override fun updateNotification(id: Long) {
         val chat = chats.getValue(id)
-        notifications.showNotificationForChat(chat)
+        notifications.showNotification(chat)
     }
 
     override fun activateChat(id: Long) {

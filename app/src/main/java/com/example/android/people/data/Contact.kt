@@ -50,21 +50,19 @@ data class Contact(
                 flow {
                     emit(
                         ChatUpdate.NewMessage(
-                            buildReply().apply { this.text = "co" }.build()
-                        )
-                    )
-                    delay(1000)
-                    emit(
-                        ChatUpdate.NewMessage(
-                            buildReply().apply { this.text = "co-co" }.build()
-                        )
-                    )
-                    delay(1000)
-                    emit(
-                        ChatUpdate.NewMessage(
                             buildReply().apply { this.text = mesageText }.build()
                         )
                     )
+                    delay(1000)
+                    val messageToDelete1 = buildReply().apply { this.text = "co" }.build()
+                    emit(ChatUpdate.NewMessage(messageToDelete1))
+                    delay(1000)
+                    val messageToDelete2 = buildReply().apply { this.text = "co-co" }.build()
+                    emit(ChatUpdate.NewMessage(messageToDelete2))
+                    delay(1000)
+                    emit(ChatUpdate.RemoveMessage(messageToDelete2.id))
+                    delay(1000)
+                    emit(ChatUpdate.RemoveMessage(messageToDelete1.id))
                 }
             },
             Contact(4L, "Sheep", "sheep.jpg") {

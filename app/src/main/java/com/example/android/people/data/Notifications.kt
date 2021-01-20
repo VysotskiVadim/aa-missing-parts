@@ -38,7 +38,7 @@ import com.example.android.people.ReplyReceiver
 interface Notifications {
     fun initialize()
     fun showNotification(chat: Chat)
-    fun dismissNotification(id: Long)
+    fun dismissNotification(chatId: Long)
 }
 
 class AndroidNotifications(private val context: Context) : Notifications {
@@ -150,7 +150,7 @@ class AndroidNotifications(private val context: Context) : Notifications {
         notificationManagerCompat.notify("tag", chat.contact.id.toInt(), builder.build())
     }
 
-    override fun dismissNotification(id: Long) {
-        notificationManagerCompat.cancel(id.toInt())
+    override fun dismissNotification(chatId: Long) {
+        notificationManagerCompat.cancel(chatId.toInt())
     }
 }

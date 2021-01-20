@@ -104,8 +104,9 @@ class ChatFragment : Fragment(R.layout.chat_fragment) {
         }
 
         viewModel.messages.observe(viewLifecycleOwner) { messages ->
-            messageAdapter.submitList(messages)
-            linearLayoutManager.scrollToPosition(messages.size - 1)
+            messageAdapter.submitList(messages) {
+                linearLayoutManager.scrollToPosition(messages.size - 1)
+            }
         }
 
         if (prepopulateText != null) {
