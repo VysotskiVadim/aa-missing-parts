@@ -97,7 +97,7 @@ class AndroidNotifications(private val context: Context) : Notifications {
                     PendingIntent.FLAG_UPDATE_CURRENT
                 )
             )
-//            // Direct Reply
+            // Direct Reply
             .addAction(
                 NotificationCompat.Action
                     .Builder(
@@ -118,8 +118,6 @@ class AndroidNotifications(private val context: Context) : Notifications {
                     .setAllowGeneratedReplies(true)
                     .build()
             )
-        // Let's add some more content to the notification in case it falls back to a normal
-        // notification.
             .setStyle(
                 NotificationCompat.MessagingStyle(person)
                     .run {
