@@ -28,7 +28,8 @@ class Chat(val contact: Contact) {
             "Send me a message",
             null,
             null,
-            System.currentTimeMillis()
+            System.currentTimeMillis(),
+            true
         ),
         Message(
             MessagesIds.getNextMessageId(),
@@ -36,7 +37,8 @@ class Chat(val contact: Contact) {
             "I will reply in 5 seconds",
             null,
             null,
-            System.currentTimeMillis()
+            System.currentTimeMillis(),
+            true
         ))
         private set(value) {
             field = value
@@ -61,6 +63,14 @@ class Chat(val contact: Contact) {
             val updated = messages.toMutableList()
             updated[index] = message
             messages = updated
+        }
+    }
+
+    fun markMessagesAsRead() {
+        messages = messages.map {
+            if (it.isNew) {
+                it.copy(isNew = false)
+            } else it
         }
     }
 

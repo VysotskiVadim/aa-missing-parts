@@ -134,7 +134,7 @@ class AndroidNotifications(private val context: Context) : Notifications {
                                     setData(message.photoMimeType, message.photoUri)
                                 }
                             }
-                            if (message.id < lastId) {
+                            if (!message.isNew) {
                                 addHistoricMessage(m)
                             } else {
                                 addMessage(m)

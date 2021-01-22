@@ -137,6 +137,7 @@ class DefaultChatRepository internal constructor(
 
     override fun activateChat(id: Long) {
         currentChat = id
+        chats.get(id)?.markMessagesAsRead()
         notifications.dismissNotification(id)
     }
 
