@@ -86,6 +86,7 @@ class AndroidNotifications(private val context: Context) : Notifications {
             .setContentText(chat.messages.last().text)
             .setSmallIcon(R.drawable.ic_message)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setOnlyAlertOnce(true)
             .setContentIntent(
                 PendingIntent.getActivity(
                     context,
@@ -147,10 +148,10 @@ class AndroidNotifications(private val context: Context) : Notifications {
 
 
 
-        notificationManagerCompat.notify("tag", chat.contact.id.toInt(), builder.build())
+        notificationManagerCompat.notify("chat", chat.contact.id.toInt(), builder.build())
     }
 
     override fun dismissNotification(chatId: Long) {
-        notificationManagerCompat.cancel(chatId.toInt())
+        notificationManagerCompat.cancel("chat", chatId.toInt())
     }
 }
