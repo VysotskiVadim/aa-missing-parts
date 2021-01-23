@@ -74,11 +74,11 @@ class AndroidNotifications(private val context: Context) : Notifications {
 
     @WorkerThread
     override fun showNotification(chat: Chat) {
-        val icon = IconCompat.createWithAdaptiveBitmapContentUri(chat.contact.iconUri)
+        val icon = IconCompat.createWithContentUri(chat.contact.iconUri)
         val contentUri = "https://android.example.com/chat/${chat.contact.id}".toUri()
         val person = Person.Builder()
             .setName(chat.contact.name)
-            //.setIcon(icon) TODO: why icon crashes?
+            .setIcon(icon)
             .build()
 
         val builder = NotificationCompat.Builder(context, CHANNEL_NEW_MESSAGES)
@@ -121,7 +121,6 @@ class AndroidNotifications(private val context: Context) : Notifications {
             .setStyle(
                 NotificationCompat.MessagingStyle(person)
                     .run {
-                        val lastId = chat.messages.last().id
                         for (message in chat.messages) {
                             val m = NotificationCompat.MessagingStyle.Message(
                                 message.text,
@@ -143,8 +142,6 @@ class AndroidNotifications(private val context: Context) : Notifications {
                     .setGroupConversation(false)
             )
         .setWhen(chat.messages.last().timestamp)
-
-
 
         notificationManagerCompat.notify("chat", chat.contact.id.toInt(), builder.build())
     }

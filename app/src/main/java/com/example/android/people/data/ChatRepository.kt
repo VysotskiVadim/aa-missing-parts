@@ -114,6 +114,7 @@ class DefaultChatRepository internal constructor(
             this.photo = photoUri
             this.photoMimeType = photoMimeType
             this.id = MessagesIds.getNextMessageId()
+            this.new = false
         }.build())
         launch {
             delay(5000) // The animal is typing...
